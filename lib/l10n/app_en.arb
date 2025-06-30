@@ -1,0 +1,16 @@
+{
+    "everyday_quote": "Everyday Quote",
+    "@everyday_quote":{
+        "description": "Title for the first everyday quote page."
+    },
+
+    "booktitle": "QUOTATIONS FROM PRESIDENT DONALD TRUMP",
+    "@booktitle":{
+        "description": "Title for the book."
+    },
+
+    "maga": "MAGA! Make America Great Again!",
+    "@maga": {
+        "description": "Slogan of Trump."
+    }
+}
