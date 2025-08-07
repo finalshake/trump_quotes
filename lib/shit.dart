@@ -3,6 +3,7 @@ import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -23,17 +24,18 @@ class MyApp extends StatefulWidget {
 class MyAppState extends State<MyApp> {
   static _AppSetting setting = _AppSetting();
 
-  // Test for JSON
+  //test for json
   static var dataList;
-  // Here I create a file named random which is for first page everyday quote use if it doesn't exist
+  // here I create a file named random which is for first page everyday quote use if it doesn't exist
   static OperateCacheFile opRandomFile = OperateCacheFile(filename: "random");
   late bool randomFileExists;
-  static List<int> contentNumber = []; // Index use
-  static List<Widget> pages = [];
-
-  bool _isDataLoaded = false;
-
-  static BookController bookController = BookController();
+  static List<int> contentNumber = []; //index use
+  static List<Widget> pages = [
+    //FirstPage(),
+    //CoverPage(),
+    //MagaPage(),
+    //MainContext(),
+  ];
 
   @override
   void initState() {
@@ -41,135 +43,39 @@ class MyAppState extends State<MyApp> {
     setting.changeLocale = (Locale locale) {
       setState(() {
         setting._locale = locale;
-        if (_isDataLoaded) {
-          generatePages();
-        }
       });
     };
-    print("Start judge random file.");
+    print("start judge random file.");
     opRandomFile.fileExist().then((value) {
       randomFileExists = value;
       if (!randomFileExists) {
-        print("Random file doesn't exist.");
+        print("random file doesn't exist.");
         opRandomFile.createFile();
       } else {
-        print("Random file exists.");
+        print("random file exists.");
       }
     });
-    print("Start JSON");
+    print("start json");
     rootBundle
-        .loadString(
-          'assets/quotes/trump_quotes_final_strictly_clean_reindexed.json',
-        )
+        .loadString('assets/quotes/trump_quotes_reclassified_fixed.json')
         .then((value) {
           dataList = json.decode(value);
-          print("Init finished");
+          print("init finished");
           print(dataList.length);
-          _isDataLoaded = true;
-          generatePages();
-
-          String lastContent = "";
-          for (int i = 1; i <= dataList.length; i++) {
-            Map<String, dynamic> content = dataList[i.toString()];
-
-            if (lastContent != content['category']['en']) {
-              contentNumber.add(i);
-              lastContent = content['category']['en'];
-            }
-          }
         });
-  }
-
-  void generatePages() {
-    pages.clear();
-    pages.add(CoverPage());
-    pages.add(MagaPage());
-    for (int i = 1; i <= dataList.length; i++) {
-      Map<String, dynamic> content = dataList[i.toString()];
-
-      Widget ch = Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          image: DecorationImage(
-            image: AssetImage('assets/images/background1.jpg'),
-            fit: BoxFit.fill,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 15),
-            Card(
-              margin: EdgeInsets.all(12),
-              child: Builder(
-                builder: (BuildContext context) {
-                  String contentToShow;
-                  switch (setting._locale) {
-                    case const Locale('en'):
-                      contentToShow = content['content']['en'];
-                    default:
-                      contentToShow = content['content']['zh'];
-                  }
-                  return Text(
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      height: 1.1,
-                      wordSpacing: 0.9,
-                    ),
-                    contentToShow,
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 15),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(width: 100),
-                Builder(
-                  builder: (BuildContext context) {
-                    String fromToShow;
-                    switch (setting._locale) {
-                      case const Locale('en'):
-                        fromToShow = content['from']['en'];
-                      default:
-                        fromToShow = content['from']['zh'];
-                    }
-                    return Flexible(
-                      child: Text(
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        fromToShow,
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-      String getTitle() {
-        switch (setting._locale) {
-          case const Locale('en'):
-            return content['category']['en'];
-          default:
-            return content['category']['zh'];
-        }
-      }
-
-      pages.add(MyTemPage(title: getTitle(), child: ch, showmenu: true));
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'trump_quotes',
+      /*       localeResolutionCallback: (Locale locale, Iterable<Locale> supportedLocales){
+        var result = supportedLocales.where((element) => element.languageCode == locale.languageCode);
+        if(result.isNotEmpty){
+          return locale;
+        }
+        return Locale('en');
+      }, */
       locale: setting._locale,
       localizationsDelegates: [
         AppLocalizations.delegate,
@@ -183,6 +89,10 @@ class MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
       ),
       home: AdPage(),
+      //FirstPage(/* title:"what", child: Text("shit") */),
+      //MagaPage(),
+      //FrameWork(),
+      //MainContext(),
     );
   }
 }
@@ -193,15 +103,12 @@ class AdPage extends StatelessWidget {
     return GestureDetector(
       child: Container(child: Placeholder(), color: Colors.white),
       onTap: () {
-        if (MyAppState.dataList != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => FirstPage()),
-          );
-          print("Leave adpage");
-        } else {
-          print("Data not loaded yet. Waiting for data to load...");
-        }
+        Navigator.push(
+          //跳转到第二个界面
+          context,
+          MaterialPageRoute(builder: (context) => FirstPage()),
+        );
+        print("leave adpage");
       },
     );
   }
@@ -239,22 +146,27 @@ class MyTemPageState<T extends StatefulWidget> extends State<MyTemPage> {
     final theme = Theme.of(context);
     final style = theme.textTheme.displaySmall!.copyWith(
       color: theme.colorScheme.onPrimaryContainer,
-      fontSize: 20,
     );
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: true,
+
         appBar: AppBar(
           title: Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Text(widget.title, style: style),
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              widget.title,
+              style: style,
+              //AppLocalizations.of(context)!.everyday_quote,
+            ),
           ),
           automaticallyImplyLeading: false,
-          toolbarHeight: 30,
+          toolbarHeight: 60,
         ),
         body: Column(
           children: [
             Expanded(child: Container(child: widget.child)),
+            //Spacer(),
             BottomBar(showmenu: widget.showmenu),
           ],
         ),
@@ -270,61 +182,23 @@ class BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 54,
+      height: 32,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Visibility(
             visible: showmenu,
-            child: PopupMenuButton<String>(
-              child: Icon(Icons.menu, size: 40),
-              onSelected: (String string) {
-                print("contents ${string.toString()}");
-                if (string != 'None')
-                  MyAppState.bookController.goTo(int.parse(string));
+            child: IconButton(
+              onPressed: () {
+                sleep(100 as Duration);
               },
-              itemBuilder:
-                  (BuildContext context) => <PopupMenuItem<String>>[
-                    PopupMenuItem(
-                      child: Text(
-                        AppLocalizations.of(context)!.contents,
-                        style: TextStyle(
-                          backgroundColor: Color.fromARGB(255, 181, 14, 2),
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      value: "None",
-                    ),
-                    for (var i in MyAppState.contentNumber)
-                      PopupMenuItem(
-                        child: Builder(
-                          builder: (context) {
-                            var textToShow;
-                            switch (MyAppState.setting._locale) {
-                              case const Locale('en'):
-                                textToShow =
-                                    MyAppState.dataList[i
-                                        .toString()]['category']['en'];
-                              default:
-                                textToShow =
-                                    MyAppState.dataList[i
-                                        .toString()]['category']['zh'];
-                            }
-                            return Text(
-                              textToShow,
-                              style: TextStyle(fontSize: 16),
-                            );
-                          },
-                        ),
-                        value: (i + 2).toString(),
-                      ),
-                  ],
+              icon: Icon(Icons.menu),
             ),
           ),
           SizedBox(),
+
           PopupMenuButton<String>(
-            child: Icon(Icons.settings, size: 40),
+            child: Icon(Icons.settings),
             onSelected: (String string) {
               print(string.toString());
               if (string == "中文") {
@@ -348,19 +222,21 @@ class BottomBar extends StatelessWidget {
 }
 
 class FirstPage extends MyTemPage {
-  FirstPage({super.key})
+  FirstPage({super.key /* , required this.title, required this.child */})
     : super(title: "title", child: Placeholder(), showmenu: false);
+  /* String title;
+  Widget child; */
 
   @override
   FirstPageState<FirstPage> createState() => FirstPageState();
 }
 
 class FirstPageState<T extends FirstPage> extends MyTemPageState<FirstPage> {
-  // Number and content to show
+  // number and content to show
   late Future<int> number;
   late Future<Map<String, dynamic>> content;
 
-  // Read the random file to decide whether to generate a new random number
+  //read the random file to decide wether should generate a new random number
   @override
   void initState() {
     super.initState();
@@ -369,23 +245,25 @@ class FirstPageState<T extends FirstPage> extends MyTemPageState<FirstPage> {
   }
 
   Future<int> getRandomNumber() async {
+    //final firstPage = widget as FirstPage;
     int ret = 1;
     final contents = await MyAppState.opRandomFile.readFile();
+    //MyAppState.opRandomFile.readFile().then((contents){
     DateTime now = DateTime.now();
     int year = now.year;
     int month = now.month;
     int day = now.day;
 
-    // Empty or out of date
-    print("About to look contents in random file");
+    //empty or out of date
+    print("about to look contents in random file");
     print(contents);
     if (contents.length != 2) {
-      print("Contents length is not 2");
+      print("contents length is not 2");
       ret = generateNewRandom(now);
     } else {
-      print("In firstpage init, parse random file, before look contents");
+      print("in firstpage init, parse random file, before look contents");
       final timeInFile = contents[0].split(",");
-      print("After split contents");
+      print("after split contents");
       print(timeInFile);
       if (timeInFile.length != 3 ||
           int.parse(timeInFile[0]) != year ||
@@ -396,21 +274,26 @@ class FirstPageState<T extends FirstPage> extends MyTemPageState<FirstPage> {
         ret = int.parse(contents[1]);
       }
     }
+
+    //});
     return ret;
   }
 
-  int randomGen(min, max) {
+  randomGen(min, max) {
+    //nextInt 方法生成一个从 0（包括）到 max（不包括）的非负随机整数
     var x = Random().nextInt(max) + min;
+    //如果您不想返回整数，只需删除 floor() 方法
     return x.floor();
   }
 
   int generateNewRandom(DateTime now) {
     int ret = 1;
     int max = MyAppState.dataList!.length;
+    //final firstPage = widget as FirstPage;
     ret = randomGen(1, max);
     print(ret);
 
-    // Write the random file, format: year,month,day\number
+    //write the random file, format: year,month,day\nnumber
     String content =
         now.year.toString() +
         ',' +
@@ -423,12 +306,17 @@ class FirstPageState<T extends FirstPage> extends MyTemPageState<FirstPage> {
     return ret;
   }
 
-  // Prepare what to show
+  //prepare what to show
   Future<Map<String, dynamic>> getContent() async {
-    print("In firstpage, check locale and decide what content to show");
+    //final firstPage = widget as FirstPage;
+    print("in firstpage, check locale and decide what content to show");
     int n = await number;
     print(n);
-    return MyAppState.dataList![n.toString()];
+    // switch(MyAppState.setting._locale){
+    //   case const Locale('en'): return MyAppState.dataList[n.toString()]["content"]["en"];
+    //   default: return MyAppState.dataList[n.toString()]["content"]["zh"];
+    // }
+    return MyAppState.dataList[n.toString()];
   }
 
   @override
@@ -436,6 +324,7 @@ class FirstPageState<T extends FirstPage> extends MyTemPageState<FirstPage> {
     widget.title = AppLocalizations.of(context)!.everyday_quote;
     Widget ch = GestureDetector(
       child: Container(
+        //color: Colors.white,
         decoration: BoxDecoration(
           color: Colors.white,
           image: DecorationImage(
@@ -444,6 +333,7 @@ class FirstPageState<T extends FirstPage> extends MyTemPageState<FirstPage> {
           ),
         ),
         child: Column(
+          //mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -454,10 +344,10 @@ class FirstPageState<T extends FirstPage> extends MyTemPageState<FirstPage> {
                 future: content,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Text("Loading");
+                    return Text("loading");
                   }
                   if (snapshot.hasError) {
-                    return Text("Error");
+                    return Text("error");
                   }
                   String contentToShow;
                   switch (MyAppState.setting._locale) {
@@ -482,10 +372,10 @@ class FirstPageState<T extends FirstPage> extends MyTemPageState<FirstPage> {
                   future: content,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Text("Loading");
+                      return Text("loading");
                     }
                     if (snapshot.hasError) {
-                      return Text("Error");
+                      return Text("error");
                     }
                     String fromToShow;
                     switch (MyAppState.setting._locale) {
@@ -512,13 +402,105 @@ class FirstPageState<T extends FirstPage> extends MyTemPageState<FirstPage> {
       ),
       onTap: () {
         Navigator.push(
+          //跳转到第二个界面
           context,
           MaterialPageRoute(builder: (context) => FrameWork()),
         );
-        print("Tapped");
+        print("tapped");
       },
     );
     widget.child = ch;
+
+    //MyAppState.pages.add(CoverPage());
+    //MyAppState.pages.add(MagaPage());
+    // add all pages
+    /*    for(int i = 1; i <= MyAppState.dataList.length; i++){
+      Map<String,dynamic> content = MyAppState.dataList[i.toString()];
+      //String title, contentToShow, from;
+      String lastContent = " ";
+     
+      if(lastContent != content['content']['en']){
+        MyAppState.contentNumber.add(i);
+        lastContent = content['content']['en'];
+      }
+      Widget ch = Container(
+        //color: Colors.white,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          image: DecorationImage(
+            image: AssetImage('assets/images/background1.jpg'),
+            fit: BoxFit.fill,
+          ),
+        ),
+        child: Column(
+          //mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(height: 50,),
+            Card(
+              margin: EdgeInsets.all(12),
+              child: Builder(
+                builder:(BuildContext context){
+                  
+                  String contentToShow;
+                  switch(MyAppState.setting._locale){
+                    case const Locale('en'): contentToShow = content['content']['en'];
+                    default: contentToShow = content['content']['zh'];
+                  }
+                  return Text(
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    contentToShow,
+                  );
+                }
+              ) 
+            
+            
+            ),
+            SizedBox(height: 20,),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(width: 100,),
+                Builder(
+                  builder: (BuildContext context){
+                    String fromToShow;
+                    switch(MyAppState.setting._locale){
+                      case const Locale('en'): fromToShow = content['from']['en'];
+                      default: fromToShow = content['from']['zh'];
+                    }
+                    return Flexible(
+                      child: Text(
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        fromToShow,
+                      ),
+                    );
+                  }
+                ),
+              ],
+            ),
+          ],
+        ),
+        
+      );
+      String getTitle() {
+        switch(MyAppState.setting._locale){
+          case const Locale('en'): return content['category']['en'];
+          default: return content['category']['zh'];
+        }
+      }
+      MyAppState.pages.add(MyTemPage(
+        title: getTitle(),
+        child: ch, 
+        showmenu: true,
+      ));
+    } */
 
     return MyTemPage(title: widget.title, child: widget.child, showmenu: false);
   }
@@ -570,6 +552,7 @@ class MagaPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Spacer(),
+
             Text(
               style: TextStyle(
                 color: Colors.red,
@@ -597,14 +580,11 @@ class FrameWork extends StatefulWidget {
 }
 
 class _FrameWork extends State<FrameWork> {
-  //BookController bookController = BookController();
+  BookController bookController = BookController();
 
   @override
   Widget build(BuildContext context) {
-    print("Building FrameWork with ${MyAppState.pages.length} pages");
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {},
+    return Placeholder(
       child: BookFx(
         size: Size(
           MediaQuery.of(context).size.width,
@@ -615,16 +595,72 @@ class _FrameWork extends State<FrameWork> {
           return MyAppState.pages[index];
         },
         lastCallBack: (index) {
-          print('Previous page $index');
+          print('xxxxxx上一页  $index');
         },
         nextCallBack: (index) {
-          print('Next page $index');
+          print('next $index');
         },
         nextPage: (index) {
           return MyAppState.pages[index];
         },
-        controller: MyAppState.bookController,
+        controller: bookController,
       ),
     );
   }
 }
+
+// main context show widget
+/* class MainContext extends StatefulWidget {
+  const MainContext({Key? key}) : super(key: key);
+
+  @override
+  State<MainContext> createState() => _MainContext();
+}
+
+class _MainContext extends State<MainContext> {
+  String data = '''''';
+  TextEditingController textEditingController = TextEditingController();
+
+  EBookController eBookController = EBookController();
+  BookController bookController = BookController();
+
+  @override
+  void initState() {
+    super.initState();
+    rootBundle.loadString('assets/quotes/trump_formatted_v2.txt').then((value) {
+      setState(() {
+        data = value;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: const Text('电子书翻页demo'),
+        ),
+        body: data.isEmpty
+            ? const SizedBox()
+            : Column(
+                children: [
+                  EBook(
+                      maxWidth: 400,//MediaQuery.of(context).size.width,
+                      eBookController: eBookController,
+                      bookController: bookController,
+                      duration: const Duration(milliseconds: 400),
+                      fontHeight: 1.6,
+                      data: data,
+                      fontSize: eBookController.fontSize,
+                      padding: const EdgeInsetsDirectional.all(15),
+                      maxHeight: //MediaQuery.of(context).size.height - kToolbarHeight  -40,),
+                600,),
+                ],
+              ));
+  }
+} */

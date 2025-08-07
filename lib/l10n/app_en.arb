@@ -12,5 +12,10 @@
     "maga": "MAGA! Make America Great Again!",
     "@maga": {
         "description": "Slogan of Trump."
+    },
+
+    "contents": "CONTENTS",
+    "@contents": {
+        "description": "just a word meaning contents"
     }
 }
