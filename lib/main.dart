@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 import 'package:bookfx/bookfx.dart';
 import 'package:trump_quotes/fileOperate.dart';
@@ -87,71 +88,83 @@ class MyAppState extends State<MyApp> {
     for (int i = 1; i <= dataList.length; i++) {
       Map<String, dynamic> content = dataList[i.toString()];
 
-      Widget ch = Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          image: DecorationImage(
-            image: AssetImage('assets/images/background1.jpg'),
-            fit: BoxFit.fill,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 15),
-            Card(
-              margin: EdgeInsets.all(12),
-              child: Builder(
-                builder: (BuildContext context) {
-                  String contentToShow;
-                  switch (setting._locale) {
-                    case const Locale('en'):
-                      contentToShow = content['content']['en'];
-                    default:
-                      contentToShow = content['content']['zh'];
-                  }
-                  return Text(
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      height: 1.1,
-                      wordSpacing: 0.9,
-                    ),
-                    contentToShow,
-                  );
-                },
+      int _calculateMaxLines(BoxConstraints constraints) {
+        final lineHeight = 1.2; // 行高系数（根据实际字体调整）
+        final cardHeight = constraints.maxHeight - 131; // 减去padding
+        return (cardHeight / (19 * lineHeight)).floor(); // 40为初始fontSize
+      }
+
+      Widget ch = LayoutBuilder(
+        builder: (context, constraints) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              image: DecorationImage(
+                image: AssetImage('assets/images/background1.jpg'),
+                fit: BoxFit.fill,
               ),
             ),
-            SizedBox(height: 15),
-            Row(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(width: 100),
-                Builder(
-                  builder: (BuildContext context) {
-                    String fromToShow;
-                    switch (setting._locale) {
-                      case const Locale('en'):
-                        fromToShow = content['from']['en'];
-                      default:
-                        fromToShow = content['from']['zh'];
-                    }
-                    return Flexible(
-                      child: Text(
+                SizedBox(height: 15),
+                Card(
+                  margin: EdgeInsets.all(12),
+                  child: Builder(
+                    builder: (BuildContext context) {
+                      String contentToShow;
+                      switch (setting._locale) {
+                        case const Locale('en'):
+                          contentToShow = content['content']['en'];
+                        default:
+                          contentToShow = content['content']['zh'];
+                      }
+                      return AutoSizeText(
                         style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                          wordSpacing: 1.0,
                         ),
-                        fromToShow,
-                      ),
-                    );
-                  },
+                        maxLines: _calculateMaxLines(constraints),
+                        minFontSize: 12,
+                        contentToShow,
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 100),
+                    Builder(
+                      builder: (BuildContext context) {
+                        String fromToShow;
+                        switch (setting._locale) {
+                          case const Locale('en'):
+                            fromToShow = content['from']['en'];
+                          default:
+                            fromToShow = content['from']['zh'];
+                        }
+                        return Flexible(
+                          child: Text(
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            fromToShow,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          );
+        },
       );
       String getTitle() {
         switch (setting._locale) {
@@ -434,81 +447,97 @@ class FirstPageState<T extends FirstPage> extends MyTemPageState<FirstPage> {
   @override
   Widget build(BuildContext context) {
     widget.title = AppLocalizations.of(context)!.everyday_quote;
+    int _calculateMaxLines(BoxConstraints constraints) {
+      final lineHeight = 1.2; // 行高系数（根据实际字体调整）
+      final cardHeight = constraints.maxHeight - 131; // 减去padding
+      return (cardHeight / (19 * lineHeight)).floor(); // 40为初始fontSize
+    }
+
     Widget ch = GestureDetector(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          image: DecorationImage(
-            image: AssetImage('assets/images/background1.jpg'),
-            fit: BoxFit.fill,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 50),
-            Card(
-              margin: EdgeInsets.all(12),
-              child: FutureBuilder<Map<String, dynamic>>(
-                future: content,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Text("Loading");
-                  }
-                  if (snapshot.hasError) {
-                    return Text("Error");
-                  }
-                  String contentToShow;
-                  switch (MyAppState.setting._locale) {
-                    case const Locale('en'):
-                      contentToShow = snapshot.data!['content']['en'];
-                    default:
-                      contentToShow = snapshot.data!['content']['zh'];
-                  }
-                  return Text(
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                    contentToShow,
-                  );
-                },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              image: DecorationImage(
+                image: AssetImage('assets/images/background1.jpg'),
+                fit: BoxFit.fill,
               ),
             ),
-            SizedBox(height: 20),
-            Row(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(width: 100),
-                FutureBuilder<Map<String, dynamic>>(
-                  future: content,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Text("Loading");
-                    }
-                    if (snapshot.hasError) {
-                      return Text("Error");
-                    }
-                    String fromToShow;
-                    switch (MyAppState.setting._locale) {
-                      case const Locale('en'):
-                        fromToShow = snapshot.data!['from']['en'];
-                      default:
-                        fromToShow = snapshot.data!['from']['zh'];
-                    }
-                    return Flexible(
-                      child: Text(
+                SizedBox(height: 15),
+                Card(
+                  margin: EdgeInsets.all(12),
+                  child: FutureBuilder<Map<String, dynamic>>(
+                    future: content,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Text("Loading");
+                      }
+                      if (snapshot.hasError) {
+                        return Text("Error");
+                      }
+                      String contentToShow;
+                      switch (MyAppState.setting._locale) {
+                        case const Locale('en'):
+                          contentToShow = snapshot.data!['content']['en'];
+                        default:
+                          contentToShow = snapshot.data!['content']['zh'];
+                      }
+                      return AutoSizeText(
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w600,
                         ),
-                        fromToShow,
-                      ),
-                    );
-                  },
+                        maxLines: _calculateMaxLines(constraints),
+                        minFontSize: 12,
+                        contentToShow,
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 100),
+                    FutureBuilder<Map<String, dynamic>>(
+                      future: content,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Text("Loading");
+                        }
+                        if (snapshot.hasError) {
+                          return Text("Error");
+                        }
+                        String fromToShow;
+                        switch (MyAppState.setting._locale) {
+                          case const Locale('en'):
+                            fromToShow = snapshot.data!['from']['en'];
+                          default:
+                            fromToShow = snapshot.data!['from']['zh'];
+                        }
+                        return Flexible(
+                          child: Text(
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            fromToShow,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          );
+        },
       ),
       onTap: () {
         Navigator.push(

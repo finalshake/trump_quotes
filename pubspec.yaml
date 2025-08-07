@@ -39,6 +39,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   bookfx:
   path_provider:
+  auto_size_text:
 
 dev_dependencies:
   flutter_test:
