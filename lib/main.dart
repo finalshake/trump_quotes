@@ -58,27 +58,25 @@ class MyAppState extends State<MyApp> {
       }
     });
     print("Start JSON");
-    rootBundle
-        .loadString(
-          'assets/quotes/trump_quotes_final_strictly_clean_reindexed.json',
-        )
-        .then((value) {
-          dataList = json.decode(value);
-          print("Init finished");
-          print(dataList.length);
-          _isDataLoaded = true;
-          generatePages();
+    rootBundle.loadString('assets/quotes/trump_quotes_news_filtered.json').then(
+      (value) {
+        dataList = json.decode(value);
+        print("Init finished");
+        print(dataList.length);
+        _isDataLoaded = true;
+        generatePages();
 
-          String lastContent = "";
-          for (int i = 1; i <= dataList.length; i++) {
-            Map<String, dynamic> content = dataList[i.toString()];
+        String lastContent = "";
+        for (int i = 1; i <= dataList.length; i++) {
+          Map<String, dynamic> content = dataList[i.toString()];
 
-            if (lastContent != content['category']['en']) {
-              contentNumber.add(i);
-              lastContent = content['category']['en'];
-            }
+          if (lastContent != content['category']['en']) {
+            contentNumber.add(i);
+            lastContent = content['category']['en'];
           }
-        });
+        }
+      },
+    );
   }
 
   void generatePages() {
